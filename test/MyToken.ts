@@ -105,5 +105,31 @@ describe("My Token", () => {
           )
       ).to.be.revertedWith("insufficient allowance");
     });
+    it("assignmet 2", async () => {
+      const signer0 = signers[0];
+      const signer1 = signers[1];
+      const transferAmount = hre.ethers.parseUnits("50", decimals);
+
+      await expect(
+        myTokenC.connect(signer0).approve(signer1.address, transferAmount)
+      )
+        .to.emit(myTokenC, "Approval")
+        .withArgs(signer1.address, transferAmount);
+
+      await expect(
+        myTokenC
+          .connect(signer1)
+          .transferFrom(signer0.address, signer1.address, transferAmount)
+      )
+        .to.emit(myTokenC, "Transfer")
+        .withArgs(signer0.address, signer1.address, transferAmount);
+
+      expect(await myTokenC.balanceOf(signer0.address)).to.equal(
+        mintingAmount * 10n ** decimals - transferAmount
+      );
+      expect(await myTokenC.balanceOf(signer1.address)).to.equal(
+        transferAmount
+      );
+    });
   });
 });
