@@ -3,14 +3,21 @@ import { expect } from "chai";
 import { DECIMALS, MINTING_AMOUNT } from "./constant";
 import { MyToken, TinyBank } from "../typechain-types";
 import { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers";
-import { TypedDataEncoder } from "ethers";
 
 describe("TinyBank", () => {
   let signers: HardhatEthersSigner[];
+  let managers: string[];
   let myTokenC: MyToken;
   let tinyBankC: TinyBank;
   beforeEach(async () => {
     signers = await hre.ethers.getSigners();
+    managers = [
+      signers[1].address,
+      signers[2].address,
+      signers[3].address,
+      signers[4].address,
+      signers[5].address,
+    ];
     myTokenC = await hre.ethers.deployContract("MyToken", [
       "MyToken",
       "MT",
@@ -19,6 +26,7 @@ describe("TinyBank", () => {
     ]);
     tinyBankC = await hre.ethers.deployContract("TinyBank", [
       await myTokenC.getAddress(),
+      managers,
     ]);
     myTokenC.setManager(tinyBankC.getAddress());
   });
@@ -78,11 +86,31 @@ describe("TinyBank", () => {
     });
 
     it("should revert when changing rewardPerBlock by hacker", async () => {
-      const hacker = signers[3];
+      const hacker = signers[10];
       const rewardToChange = hre.ethers.parseUnits("10000", DECIMALS);
       await expect(
         tinyBankC.connect(hacker).setRewardPerBlock(rewardToChange)
-      ).to.be.revertedWith("You are not authorized to manage this contract");
+      ).to.be.revertedWith("Not all confirmed yet");
     });
+  });
+
+  describe("assignment 3", () => {
+    it("onlyAllConfirmed", async () => {
+      const rewardToSet = hre.ethers.parseUnits("5", DECIMALS);
+
+      for (let i = 0; i < 3; i++) {
+        await tinyBankC.connect(signers[i + 1]).confirm();
+      }
+
+      await expect(tinyBankC.setRewardPerBlock(rewardToSet)).to.be.revertedWith(
+        "Not all confirmed yet"
+      );
+    });
+  });
+
+  it("should revert when non-manager confirm", async () => {
+    await expect(tinyBankC.connect(signers[10]).confirm()).to.be.revertedWith(
+      "You are not a manager"
+    );
   });
 });
