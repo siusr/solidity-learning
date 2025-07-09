@@ -41,6 +41,15 @@ describe("My Token", () => {
         MINTING_AMOUNT * 10n ** DECIMALS
       );
     });
+
+    // TDD: Test Driven Development
+    it("should return or revert when minting infinitly", async () => {
+      const hacker = signers[2];
+      const mintingAgainAmount = hre.ethers.parseUnits("10000", DECIMALS);
+      await expect(
+        myTokenC.connect(hacker).mint(mintingAgainAmount, hacker)
+      ).to.be.revertedWith("You are not authorized to manage this token");
+    });
   });
 
   describe("Transfer", () => {
@@ -62,14 +71,6 @@ describe("My Token", () => {
       expect(await myTokenC.balanceOf(signer1.address)).equal(
         hre.ethers.parseUnits("0.5", DECIMALS)
       );
-
-      const filter = myTokenC.filters.Transfer(signer0.address);
-      const logs = await myTokenC.queryFilter(filter, 0, "latest");
-      console.log(logs.length);
-
-      console.log(logs[0].args.from);
-      console.log(logs[0].args.to);
-      console.log(logs[0].args.value);
     });
     it("should be reverted with insufficient balace error", async () => {
       const signer1 = signers[1];
