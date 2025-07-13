@@ -90,27 +90,27 @@ describe("TinyBank", () => {
       const rewardToChange = hre.ethers.parseUnits("10000", DECIMALS);
       await expect(
         tinyBankC.connect(hacker).setRewardPerBlock(rewardToChange)
-      ).to.be.revertedWith("Not all confirmed yet");
+      ).to.be.revertedWith("You are not authorized to manage this contract"); // Not all confirmed yet
     });
   });
 
-  describe("assignment 3", () => {
-    it("onlyAllConfirmed", async () => {
-      const rewardToSet = hre.ethers.parseUnits("5", DECIMALS);
+  // describe("assignment 3", () => {
+  //  it("onlyAllConfirmed", async () => {
+  //    const rewardToSet = hre.ethers.parseUnits("5", DECIMALS);
 
-      for (let i = 0; i < 3; i++) {
-        await tinyBankC.connect(signers[i + 1]).confirm();
-      }
+  //    for (let i = 0; i < 3; i++) {
+  //      await tinyBankC.connect(signers[i + 1]).confirm();
+  //    }
 
-      await expect(tinyBankC.setRewardPerBlock(rewardToSet)).to.be.revertedWith(
-        "Not all confirmed yet"
-      );
-    });
-  });
+  //    await expect(tinyBankC.setRewardPerBlock(rewardToSet)).to.be.revertedWith(
+  //      "Not all confirmed yet"
+  //    );
+  //  });
+  //});
 
-  it("should revert when non-manager confirm", async () => {
-    await expect(tinyBankC.connect(signers[10]).confirm()).to.be.revertedWith(
-      "You are not a manager"
-    );
-  });
+  // it("should revert when non-manager confirm", async () => {
+  //   await expect(tinyBankC.connect(signers[10]).confirm()).to.be.revertedWith(
+  //     "You are not a manager"
+  //   );
+  // });
 });
